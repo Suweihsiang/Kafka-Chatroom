@@ -13,9 +13,10 @@ from flask import (
     Response,
 )
 from flask_socketio import SocketIO, join_room
+from confluent_kafka.admin import AdminClient, NewTopic
 from kafka_producer import send_message
 from kafka_consumer import start_consume
-from connect_to_db import connect_to_mongodb
+from connect_to_db import connect_to_mongodb, show_latest_messages
 from datetime import datetime
 from typing import Dict, Tuple
 
@@ -32,6 +33,30 @@ socketio = SocketIO(app)  # 初始化SocketIO，用來處理即時事件
 mongo_collection = connect_to_mongodb(
     "mongodb://localhost:27017", "Kafka_Chatroom", "message"
 )
+
+
+def topic_ready_or_not(topic: str) -> None:
+    """
+    檢查指定Kafka topic是否存在；若不存在則建立該topic
+    參數:
+    - topic(str):Kafka topic名稱
+    """
+    admin_client = AdminClient({"bootstrap.servers": "localhost:9092"})
+    topic_metadata = admin_client.list_topics(timeout=10)
+
+    if topic in topic_metadata.topics:  # 如果topic已存在
+        print("topic is ready")
+        return
+
+    new_topic = NewTopic(topic, 1, 1)
+    fs = admin_client.create_topics([new_topic])
+
+    try:
+        fs[topic].result(timeout=10)  # 等待建立完成，避免卡住
+        print(f"create topic {topic} successfully")
+    except Exception as e:
+        print(f"create topic {topic} failed : {e}")
+
 
 # 用來追蹤哪些使用者已啟動過Kafka Consumer
 # key=(topic,username)，value=True表示已啟動
@@ -128,6 +153,12 @@ def handle_join(username: str) -> None:
     """
     join_room(username)
     print(f"{username} join the chat")
+    # 每次進入聊天室先在對話框載入前幾筆歷史訊息
+    show_latest_messages(
+        socketio, mongo_collection, session.get("username"), session.get("friend"), 30
+    )
+    # 確認topic是否已存在，若不存在則建立之
+    topic_ready_or_not(session.get("topic"))
     # 若尚未啟動consumer，則啟動之
     consumer_ready_or_not(session.get("topic"), session.get("username"))
 

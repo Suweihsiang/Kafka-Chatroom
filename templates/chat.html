@@ -72,6 +72,23 @@
 
         socket.emit('join', username);
 
+        socket.on('history_message', (messages) => {
+            messages.forEach(
+            (msg) => {
+            const msgElem = document.createElement('div');
+            const time = new Date(msg.timestamp).toLocaleString();
+            msgElem.textContent = `[${time}] ${msg.sender}: ${msg.message}`;
+
+            if (msg.sender === username) {
+                msgElem.classList.add('my-message');
+            } else {
+                msgElem.classList.add('friend-message');
+            }
+
+            chatBox.appendChild(msgElem)});
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
         socket.on('new_message', (msg) => {
             const msgElem = document.createElement('div');
             const time = new Date(msg.timestamp).toLocaleString();
