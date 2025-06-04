@@ -1,6 +1,6 @@
+from flask_socketio import SocketIO
 from pymongo import MongoClient
 from pymongo.collection import Collection
-from flask_socketio import SocketIO
 
 
 def connect_to_mongodb(link: str, db: str, collection: str) -> Collection:

@@ -1,7 +1,8 @@
-from confluent_kafka import Producer, Message
-from confluent_kafka.error import KafkaError
-from typing import Any, Optional
 import json
+from typing import Any, Optional
+
+from confluent_kafka import Message, Producer
+from confluent_kafka.error import KafkaError
 
 # 設定Producer所需參數
 props = {

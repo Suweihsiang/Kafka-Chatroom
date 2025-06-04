@@ -1,10 +1,12 @@
+import json
+from typing import Dict, Tuple
+
+import eventlet
+from bson import ObjectId
 from confluent_kafka import Consumer, KafkaError, KafkaException
 from flask_socketio import SocketIO
+
 from connect_to_db import connect_to_mongodb
-from bson import ObjectId
-from typing import Dict, Tuple
-import eventlet
-import json
 
 # 連線到MongoDB
 mongo_collection = connect_to_mongodb(

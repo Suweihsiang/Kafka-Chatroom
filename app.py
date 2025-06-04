@@ -2,26 +2,27 @@ import eventlet
 
 eventlet.monkey_patch()  # 將標準庫中的部分模組打上monkey patch，使其支援非同步協程
 
-from flask import (
-    Flask,
-    redirect,
-    render_template,
-    url_for,
-    make_response,
-    request,
-    session,
-    Response,
-)
-from flask_socketio import SocketIO, join_room
-from confluent_kafka.admin import AdminClient, NewTopic
-from kafka_producer import send_message
-from kafka_consumer import start_consume
-from connect_to_db import connect_to_mongodb, show_latest_messages
+import os
 from datetime import datetime
 from typing import Dict, Tuple
 
-import os
+from confluent_kafka.admin import AdminClient, NewTopic
 from dotenv import load_dotenv
+from flask import (
+    Flask,
+    Response,
+    make_response,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
+from flask_socketio import SocketIO, join_room
+
+from connect_to_db import connect_to_mongodb, show_latest_messages
+from kafka_consumer import start_consume
+from kafka_producer import send_message
 
 load_dotenv()  # 載入.env檔案中的環境變數
 
